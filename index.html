@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulador de Carreira - Foco em Transferências</title>
+    <title>Simulador de Carreira - Landscape</title>
     <style>
         :root {
             --bg-color: #0b110e;
@@ -19,69 +19,85 @@
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: var(--bg-color); color: var(--text-color); padding: 20px; display: flex; justify-content: center; min-height: 100vh; }
-        .container { width: 100%; max-width: 800px; background: var(--card-bg); border: 2px solid var(--border-color); border-radius: 8px; padding: 20px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5); }
+        body { background-color: var(--bg-color); color: var(--text-color); padding: 20px; min-height: 100vh; }
+        
+        /* Container mais largo para focar no formato landscape */
+        .container { width: 100%; max-width: 1200px; margin: 0 auto; background: var(--card-bg); border: 2px solid var(--border-color); border-radius: 8px; padding: 20px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5); }
         
         .header { text-align: center; border-bottom: 2px dashed var(--border-color); padding-bottom: 15px; margin-bottom: 20px; }
-        .header h1 { font-size: 1.8rem; color: var(--primary-color); text-transform: uppercase; }
+        .header h1 { font-size: 1.8rem; color: var(--primary-color); text-transform: uppercase; letter-spacing: 1px; }
         
         .screen { display: none; }
         .screen.active { display: block; }
         
+        /* Setup Form */
+        .setup-form { max-width: 600px; margin: 0 auto; }
         .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; }
-        input, select { width: 100%; padding: 10px; background: #080d0b; border: 1px solid var(--border-color); color: var(--text-color); border-radius: 4px; outline: none; }
+        label { display: block; margin-bottom: 5px; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; font-weight: bold; }
+        input, select { width: 100%; padding: 12px; background: #080d0b; border: 1px solid var(--border-color); color: var(--text-color); border-radius: 4px; outline: none; font-size: 1rem; }
         
-        .btn { width: 100%; padding: 12px; background: var(--primary-color); color: #000; border: none; border-radius: 4px; font-weight: bold; text-transform: uppercase; cursor: pointer; transition: 0.2s; margin-top: 10px; }
+        .btn { width: 100%; padding: 15px; background: var(--primary-color); color: #000; border: none; border-radius: 4px; font-weight: bold; font-size: 1rem; text-transform: uppercase; cursor: pointer; transition: 0.2s; }
         .btn:hover { background: #00cc52; }
         .btn:disabled { background: #1f3629; color: #8ba396; cursor: not-allowed; }
         
-        /* Cabeçalho do Jogador */
-        .player-info-bar { display: flex; justify-content: space-between; background: #080d0b; padding: 15px; border-radius: 6px; border: 1px solid var(--border-color); margin-bottom: 20px; }
-        .player-info-bar h2 { font-size: 1.2rem; color: #fff; }
-        .player-info-bar .club-name { color: var(--primary-color); font-weight: bold; font-size: 1.2rem; }
+        /* Cabeçalho do Jogador (Header de Status) */
+        .player-info-bar { display: flex; justify-content: space-between; align-items: center; background: #080d0b; padding: 15px 25px; border-radius: 6px; border: 1px solid var(--border-color); margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
+        .player-identity h2 { font-size: 1.4rem; color: #fff; text-transform: uppercase; }
+        .player-identity span { color: var(--text-muted); font-size: 0.9rem; font-weight: bold; }
+        
+        .player-stats { display: flex; gap: 20px; background: rgba(255,255,255,0.02); padding: 10px 20px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05); }
+        .stat-box { text-align: center; }
+        .stat-box label { margin-bottom: 2px; font-size: 0.7rem; }
+        .stat-box span { display: block; font-size: 1.3rem; font-weight: bold; color: var(--accent-color); }
+        
+        .player-club { text-align: right; }
+        .player-club .club-name { color: var(--primary-color); font-weight: bold; font-size: 1.4rem; }
 
-        /* Tabela de Histórico (Foco principal) */
-        .history-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.9rem; }
-        .history-table th { background: #080d0b; color: var(--text-muted); padding: 10px; text-align: center; border-bottom: 2px solid var(--border-color); text-transform: uppercase; font-size: 0.8rem; }
-        .history-table td { padding: 12px 10px; text-align: center; border-bottom: 1px solid var(--border-color); }
+        /* Layout Principal do Jogo (Colunas) */
+        .game-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 25px; align-items: start; }
+        @media(max-width: 900px) { .game-layout { grid-template-columns: 1fr; } }
+
+        /* Tabela de Histórico */
+        .table-container { overflow-x: auto; background: #080d0b; border: 1px solid var(--border-color); border-radius: 6px; }
+        .history-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        .history-table th { background: #121e18; color: var(--text-muted); padding: 12px 10px; text-align: center; border-bottom: 2px solid var(--border-color); text-transform: uppercase; font-size: 0.8rem; position: sticky; top: 0; }
+        .history-table td { padding: 12px 10px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .history-table tr:nth-child(even) td { background-color: var(--row-bg-even); }
         .history-table tr:nth-child(odd) td { background-color: var(--row-bg-odd); }
         .col-club { text-align: left !important; font-weight: bold; }
         .col-age { color: var(--accent-color); font-weight: bold; }
 
-        /* Hub de Transferências */
-        .transfer-hub { background: #080d0b; border: 1px solid var(--accent-color); border-radius: 6px; padding: 15px; margin-bottom: 20px; text-align: center; }
-        .transfer-title { color: var(--accent-color); text-transform: uppercase; font-size: 0.9rem; margin-bottom: 15px; letter-spacing: 1px; }
-        .proposals-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
-        @media(min-width: 600px) { .proposals-grid { grid-template-columns: 1fr 1fr; } }
+        /* Painel Lateral (Ações e Transferências) */
+        .action-panel { position: sticky; top: 20px; display: flex; flex-direction: column; gap: 20px; }
+        
+        .transfer-hub { background: #080d0b; border: 1px solid var(--accent-color); border-radius: 6px; padding: 20px; text-align: center; }
+        .transfer-title { color: var(--accent-color); text-transform: uppercase; font-size: 0.9rem; margin-bottom: 15px; letter-spacing: 1px; font-weight: bold; }
+        .proposals-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
         
         .proposal-card { background: #121e18; border: 1px solid var(--border-color); padding: 15px; border-radius: 4px; display: flex; flex-direction: column; justify-content: space-between; }
         .proposal-card.roulette-spin { animation: pulse 0.1s infinite; border-color: var(--primary-color); }
         .proposal-club { font-size: 1.1rem; font-weight: bold; margin-bottom: 10px; min-height: 26px; }
         
-        .btn-accept { background: var(--accent-color); color: #000; border: none; padding: 8px; border-radius: 4px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.8rem; }
-        .btn-reject { background: transparent; border: 1px solid var(--text-muted); color: var(--text-muted); padding: 8px; border-radius: 4px; cursor: pointer; margin-top: 5px; }
+        .btn-accept { background: var(--accent-color); color: #000; border: none; padding: 10px; border-radius: 4px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.85rem; }
+        .btn-reject { background: transparent; border: 1px solid var(--text-muted); color: var(--text-muted); padding: 10px; border-radius: 4px; cursor: pointer; margin-top: 10px; width: 100%; font-weight: bold; }
+        .btn-reject:hover { background: rgba(255,255,255,0.05); color: #fff; }
 
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.7; }
-            100% { opacity: 1; }
-        }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
 
-        /* Animação inicial */
-        #roulette-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 100; justify-content: center; align-items: center; flex-direction: column; text-align: center; }
-        #roulette-text { font-size: 3rem; color: var(--primary-color); font-weight: bold; margin-top: 20px; text-transform: uppercase; }
+        /* Overlay Animação Inicial */
+        #roulette-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 100; justify-content: center; align-items: center; flex-direction: column; text-align: center; }
+        #roulette-text { font-size: 4rem; color: var(--primary-color); font-weight: bold; margin-top: 20px; text-transform: uppercase; }
         
-        .final-stats { display: flex; justify-content: space-around; background: #080d0b; padding: 20px; border-radius: 6px; margin-top: 20px; }
-        .final-stat-box { text-align: center; }
-        .final-stat-box span { display: block; font-size: 2rem; color: var(--primary-color); font-weight: bold; }
+        /* Tela Final */
+        .final-stats { display: flex; justify-content: space-around; background: #080d0b; padding: 30px; border-radius: 6px; margin-top: 20px; border: 1px solid var(--border-color); flex-wrap: wrap; gap: 20px; }
+        .final-stat-box { text-align: center; min-width: 120px; }
+        .final-stat-box span { display: block; font-size: 2.5rem; color: var(--primary-color); font-weight: bold; margin-bottom: 5px; }
     </style>
 </head>
 <body>
 
     <div id="roulette-overlay">
-        <h3 style="color: var(--text-muted); text-transform: uppercase;">Sorteando Clube da Base...</h3>
+        <h3 style="color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px;">Sorteando Clube da Base...</h3>
         <div id="roulette-text">Buscando...</div>
     </div>
 
@@ -90,7 +106,8 @@
             <h1>Career Simulator</h1>
         </div>
 
-        <div id="screen-setup" class="screen active">
+        <!-- Tela 1: Setup -->
+        <div id="screen-setup" class="screen active setup-form">
             <div class="form-group">
                 <label>Nome do Jogador</label>
                 <input type="text" id="player-name" value="Craque Desconhecido">
@@ -103,57 +120,89 @@
                     <option value="ZAG">Zagueiro (Foco em Defesa/Poucos Gols)</option>
                 </select>
             </div>
-            <button class="btn" onclick="startDraft()">Começar Carreira</button>
+            <button class="btn" onclick="startDraft()" style="margin-top: 10px;">Começar Carreira</button>
         </div>
 
+        <!-- Tela 2: Jogo Principal -->
         <div id="screen-game" class="screen">
+            
+            <!-- Header de Status (Atualizado dinamicamente) -->
             <div class="player-info-bar">
-                <div>
+                <div class="player-identity">
                     <h2 id="ui-name">Nome</h2>
-                    <span style="color: var(--text-muted); font-size: 0.85rem;" id="ui-pos">POS</span>
+                    <span id="ui-pos">POS</span>
                 </div>
-                <div style="text-align: right;">
-                    <div style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;">Clube Atual</div>
+                
+                <div class="player-stats">
+                    <div class="stat-box"><label>Idade</label><span id="ui-age">16</span></div>
+                    <div class="stat-box"><label>Jogos</label><span id="ui-matches">0</span></div>
+                    <div class="stat-box"><label>Gols</label><span id="ui-goals">0</span></div>
+                    <div class="stat-box"><label>Asts</label><span id="ui-assists">0</span></div>
+                </div>
+                
+                <div class="player-club">
+                    <label>Clube Atual</label>
                     <div class="club-name" id="ui-club">Clube</div>
                 </div>
             </div>
 
-            <table class="history-table">
-                <thead>
-                    <tr>
-                        <th>Idade</th>
-                        <th style="text-align: left;">Clube</th>
-                        <th>Gols</th>
-                        <th>Asts</th>
-                        <th>Títulos</th>
-                    </tr>
-                </thead>
-                <tbody id="history-body">
-                    </tbody>
-            </table>
+            <!-- Layout Dividido -->
+            <div class="game-layout">
+                
+                <!-- Coluna Esquerda: Tabela -->
+                <div class="table-container">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>Idade</th>
+                                <th style="text-align: left;">Clube</th>
+                                <th>Jogos</th>
+                                <th>Gols</th>
+                                <th>Asts</th>
+                                <th>Títulos Conquistados</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-body">
+                            <!-- Linhas inseridas aqui em ordem normal (cima para baixo) -->
+                        </tbody>
+                    </table>
+                </div>
 
-            <div class="transfer-hub" id="transfer-hub" style="display: none;">
-                <div class="transfer-title" id="transfer-status">Janela de Transferências Aberta</div>
-                <div class="proposals-grid" id="proposals-container">
+                <!-- Coluna Direita: Ações -->
+                <div class="action-panel">
+                    
+                    <!-- Hub de Transferências -->
+                    <div class="transfer-hub" id="transfer-hub" style="display: none;">
+                        <div class="transfer-title" id="transfer-status">Janela de Transferências Aberta</div>
+                        <div class="proposals-grid" id="proposals-container">
+                            <!-- Cards de propostas -->
+                        </div>
+                        <button class="btn-reject" id="btn-stay" style="display: none;" onclick="rejectProposals()">Recusar Ofertas e Ficar</button>
                     </div>
-                <button class="btn btn-reject" id="btn-stay" style="display: none; margin-top: 15px; width: 100%;" onclick="rejectProposals()">Recusar Ofertas e Ficar</button>
-            </div>
 
-            <button class="btn" id="btn-simulate" onclick="simulateSeason()">Simular 2 Anos</button>
+                    <button class="btn" id="btn-simulate" onclick="simulateSeason()">Simular 2 Anos</button>
+                </div>
+                
+            </div>
         </div>
 
+        <!-- Tela 3: Fim de Carreira -->
         <div id="screen-end" class="screen">
-            <h2 style="text-align: center; color: var(--accent-color); text-transform: uppercase; margin-bottom: 10px;">Fim de Carreira (36 Anos)</h2>
-            <p style="text-align: center; color: var(--text-muted);">Sua jornada chegou ao fim. Estes são seus números finais:</p>
+            <h2 style="text-align: center; color: var(--accent-color); text-transform: uppercase; margin-bottom: 10px; font-size: 2rem;">Fim de Carreira (36 Anos)</h2>
+            <p style="text-align: center; color: var(--text-muted); font-size: 1.1rem;">Sua jornada chegou ao fim. Estes são seus números finais:</p>
             
             <div class="final-stats">
                 <div class="final-stat-box">
+                    <span id="end-matches">0</span>
+                    <label>Partidas Jogadas</label>
+                </div>
+                <div class="final-stat-box">
                     <span id="end-goals">0</span>
-                    <label>Gols</label>
+                    <label>Gols Marcados</label>
                 </div>
                 <div class="final-stat-box">
                     <span id="end-assists">0</span>
-                    <label>Assists</label>
+                    <label>Assistências</label>
                 </div>
                 <div class="final-stat-box">
                     <span id="end-trophies">0</span>
@@ -161,7 +210,9 @@
                 </div>
             </div>
 
-            <button class="btn" onclick="location.reload()" style="margin-top: 30px;">Jogar Novamente</button>
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn" onclick="location.reload()" style="max-width: 300px;">Jogar Novamente</button>
+            </div>
         </div>
     </div>
 
@@ -175,11 +226,9 @@
             "Ajax", "Benfica", "Porto", "Sporting"
         ];
 
-        const TROPHIES = ["🏆 Champions", "🥇 Liga", "🥈 Copa"];
-
         let player = {
             name: "", pos: "", age: 16, currentClub: "",
-            totalGoals: 0, totalAssists: 0, totalTrophies: 0
+            totalMatches: 0, totalGoals: 0, totalAssists: 0, totalTrophies: 0
         };
 
         function getRandomClub(exclude = "") {
@@ -190,8 +239,16 @@
             return club;
         }
 
+        function updateHeaderUI() {
+            document.getElementById('ui-age').innerText = player.age;
+            document.getElementById('ui-matches').innerText = player.totalMatches;
+            document.getElementById('ui-goals').innerText = player.totalGoals;
+            document.getElementById('ui-assists').innerText = player.totalAssists;
+            document.getElementById('ui-club').innerText = player.currentClub;
+        }
+
         function startDraft() {
-            player.name = document.getElementById('player-name').value || "Craque";
+            player.name = document.getElementById('player-name').value || "Craque Desconhecido";
             player.pos = document.getElementById('player-pos').value;
             
             const overlay = document.getElementById('roulette-overlay');
@@ -201,11 +258,10 @@
             let ticks = 0;
             const finalClub = getRandomClub();
             
-            // Animação da Roleta Inicial
             const interval = setInterval(() => {
                 rouletteText.innerText = getRandomClub();
                 ticks++;
-                if(ticks > 25) { // Para após ~2.5 segundos
+                if(ticks > 25) { 
                     clearInterval(interval);
                     rouletteText.innerText = finalClub;
                     rouletteText.style.color = "#fff";
@@ -225,48 +281,60 @@
             
             document.getElementById('ui-name').innerText = player.name;
             document.getElementById('ui-pos').innerText = player.pos;
-            document.getElementById('ui-club').innerText = player.currentClub;
             
-            // Adiciona a primeira linha (Base)
-            addHistoryRow(16, player.currentClub, "-", "-", "Contrato Base");
+            updateHeaderUI();
+            
+            // Adiciona a primeira linha (Base) e simula estatísticas iniciais leves (opcional)
+            addHistoryRow(16, player.currentClub, 0, 0, 0, "Contrato Base");
         }
 
-        function addHistoryRow(age, club, goals, assists, trophiesStr) {
+        function addHistoryRow(age, club, matches, goals, assists, trophiesStr) {
             const tbody = document.getElementById('history-body');
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td class="col-age">${age}</td>
                 <td class="col-club">${club}</td>
+                <td>${matches}</td>
                 <td>${goals}</td>
                 <td>${assists}</td>
                 <td style="font-size: 0.8rem;">${trophiesStr || "-"}</td>
             `;
-            // Insere no topo
-            tbody.insertBefore(tr, tbody.firstChild);
+            // appendChild insere a linha no FINAL da tabela, mantendo a ordem cronológica
+            tbody.appendChild(tr);
+            
+            // Rola a tabela para baixo automaticamente
+            const container = document.querySelector('.table-container');
+            container.scrollTop = container.scrollHeight;
         }
 
         function simulateSeason() {
             if (player.age >= 36) return;
 
-            // Bloqueia botão durante simulação
             document.getElementById('btn-simulate').disabled = true;
             document.getElementById('btn-simulate').innerText = "Simulando...";
             document.getElementById('transfer-hub').style.display = "none";
 
             setTimeout(() => {
-                // Cálculo de Gols e Assists (2 anos)
                 let multiplier = (player.age >= 22 && player.age <= 30) ? 1.5 : 1.0;
+                
+                // Cálculo de Jogos no período de 2 anos (entre 40 e 90 jogos)
+                let periodMatches = Math.floor(Math.random() * 50) + 40;
+                
                 let gBase = player.pos === 'ATA' ? 20 : player.pos === 'MEI' ? 8 : 2;
                 let aBase = player.pos === 'MEI' ? 15 : player.pos === 'ATA' ? 5 : 2;
 
-                let goals = Math.floor((gBase + Math.random() * 15) * multiplier * 2); // x2 pois são 2 anos
-                let assists = Math.floor((aBase + Math.random() * 10) * multiplier * 2);
+                let goals = Math.floor((gBase + Math.random() * 15) * multiplier * (periodMatches / 50)); 
+                let assists = Math.floor((aBase + Math.random() * 10) * multiplier * (periodMatches / 50));
                 
+                // Impede que o jogador tenha mais gols/assistências que partidas no período
+                if (goals > periodMatches * 1.5) goals = Math.floor(periodMatches * 1.2);
+                if (assists > periodMatches) assists = Math.floor(periodMatches * 0.8);
+
+                player.totalMatches += periodMatches;
                 player.totalGoals += goals;
                 player.totalAssists += assists;
                 player.age += 2;
 
-                // Títulos Aleatórios no período
                 let wonTrophies = [];
                 for(let i=0; i<2; i++) {
                     if(Math.random() < 0.25) wonTrophies.push("🥇 Liga");
@@ -274,10 +342,9 @@
                 }
                 player.totalTrophies += wonTrophies.length;
 
-                // Atualiza UI Histórico
-                addHistoryRow(player.age, player.currentClub, goals, assists, wonTrophies.join(", "));
+                updateHeaderUI();
+                addHistoryRow(player.age, player.currentClub, periodMatches, goals, assists, wonTrophies.join(", "));
 
-                // Verifica fim de carreira
                 if (player.age >= 36) {
                     endGame();
                 } else {
@@ -296,12 +363,11 @@
             container.innerHTML = "";
             btnStay.style.display = "none";
 
-            // Define se terá 0, 1 ou 2 propostas
             const numProposals = Math.random() < 0.2 ? 0 : Math.random() < 0.6 ? 1 : 2;
 
             if (numProposals === 0) {
                 setTimeout(() => {
-                    document.getElementById('transfer-status').innerText = "Nenhuma proposta recebida nesta janela.";
+                    document.getElementById('transfer-status').innerText = "Nenhuma proposta nesta janela.";
                     document.getElementById('btn-simulate').disabled = false;
                     document.getElementById('btn-simulate').innerText = "Simular Próximos 2 Anos";
                 }, 1500);
@@ -310,7 +376,6 @@
 
             document.getElementById('transfer-status').innerText = "Sorteando Propostas...";
 
-            // Cria os cards para a roleta
             let proposalClubs = [];
             for (let i = 0; i < numProposals; i++) {
                 let card = document.createElement('div');
@@ -319,13 +384,11 @@
                 card.innerHTML = `<div class="proposal-club" id="prop-text-${i}">...</div>`;
                 container.appendChild(card);
                 
-                // Escolhe clube final daquela carta
                 let pClub = getRandomClub(player.currentClub);
                 while(proposalClubs.includes(pClub)) pClub = getRandomClub(player.currentClub);
                 proposalClubs.push(pClub);
             }
 
-            // Animação da Roleta nas cartas
             let ticks = 0;
             const interval = setInterval(() => {
                 for (let i = 0; i < numProposals; i++) {
@@ -336,14 +399,13 @@
                     clearInterval(interval);
                     document.getElementById('transfer-status').innerText = "Você tem ofertas na mesa!";
                     
-                    // Finaliza animação e mostra botões de aceitar
                     for (let i = 0; i < numProposals; i++) {
                         const finalC = proposalClubs[i];
                         const cardEl = document.getElementById(`prop-card-${i}`);
                         cardEl.classList.remove('roulette-spin');
                         cardEl.innerHTML = `
                             <div class="proposal-club">${finalC}</div>
-                            <button class="btn-accept" onclick="acceptProposal('${finalC}')">Assinar</button>
+                            <button class="btn-accept" onclick="acceptProposal('${finalC}')">Assinar Contrato</button>
                         `;
                     }
                     btnStay.style.display = "block";
@@ -353,7 +415,7 @@
 
         function acceptProposal(newClub) {
             player.currentClub = newClub;
-            document.getElementById('ui-club').innerText = newClub;
+            updateHeaderUI();
             closeTransferWindow();
         }
 
@@ -371,6 +433,7 @@
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById('screen-end').classList.add('active');
             
+            document.getElementById('end-matches').innerText = player.totalMatches;
             document.getElementById('end-goals').innerText = player.totalGoals;
             document.getElementById('end-assists').innerText = player.totalAssists;
             document.getElementById('end-trophies').innerText = player.totalTrophies;
