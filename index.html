@@ -3,457 +3,378 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Filtro de Carreira de Futebol</title>
+    <title>Simulador de Carreira - Foco em Transferências</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@700;900&display=swap');
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Roboto', sans-serif;
+        :root {
+            --bg-color: #0b110e;
+            --card-bg: #121e18;
+            --border-color: #1f3629;
+            --primary-color: #00ff66;
+            --text-color: #e2e8f0;
+            --text-muted: #8ba396;
+            --accent-color: #ffaa00;
+            --danger-color: #ff3b30;
+            --row-bg-even: #16261e;
+            --row-bg-odd: #0d1612;
         }
 
-        body {
-            background-color: #000;
-            color: #fff;
-            display: flex;
-            justify-content: center;
-            min-height: 100vh;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-color); padding: 20px; display: flex; justify-content: center; min-height: 100vh; }
+        .container { width: 100%; max-width: 800px; background: var(--card-bg); border: 2px solid var(--border-color); border-radius: 8px; padding: 20px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5); }
+        
+        .header { text-align: center; border-bottom: 2px dashed var(--border-color); padding-bottom: 15px; margin-bottom: 20px; }
+        .header h1 { font-size: 1.8rem; color: var(--primary-color); text-transform: uppercase; }
+        
+        .screen { display: none; }
+        .screen.active { display: block; }
+        
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; }
+        input, select { width: 100%; padding: 10px; background: #080d0b; border: 1px solid var(--border-color); color: var(--text-color); border-radius: 4px; outline: none; }
+        
+        .btn { width: 100%; padding: 12px; background: var(--primary-color); color: #000; border: none; border-radius: 4px; font-weight: bold; text-transform: uppercase; cursor: pointer; transition: 0.2s; margin-top: 10px; }
+        .btn:hover { background: #00cc52; }
+        .btn:disabled { background: #1f3629; color: #8ba396; cursor: not-allowed; }
+        
+        /* Cabeçalho do Jogador */
+        .player-info-bar { display: flex; justify-content: space-between; background: #080d0b; padding: 15px; border-radius: 6px; border: 1px solid var(--border-color); margin-bottom: 20px; }
+        .player-info-bar h2 { font-size: 1.2rem; color: #fff; }
+        .player-info-bar .club-name { color: var(--primary-color); font-weight: bold; font-size: 1.2rem; }
 
-        /* Container simulando a tela do celular */
-        .app-container {
-            width: 100%;
-            max-width: 420px;
-            background-color: #111;
-            padding: 10px;
-            display: flex;
-            flex-direction: column;
-            border-left: 1px solid #333;
-            border-right: 1px solid #333;
-            position: relative;
-        }
+        /* Tabela de Histórico (Foco principal) */
+        .history-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.9rem; }
+        .history-table th { background: #080d0b; color: var(--text-muted); padding: 10px; text-align: center; border-bottom: 2px solid var(--border-color); text-transform: uppercase; font-size: 0.8rem; }
+        .history-table td { padding: 12px 10px; text-align: center; border-bottom: 1px solid var(--border-color); }
+        .history-table tr:nth-child(even) td { background-color: var(--row-bg-even); }
+        .history-table tr:nth-child(odd) td { background-color: var(--row-bg-odd); }
+        .col-club { text-align: left !important; font-weight: bold; }
+        .col-age { color: var(--accent-color); font-weight: bold; }
 
-        /* Top Bar - Estatísticas Globais */
-        .top-stats {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 5px;
-            margin-bottom: 10px;
-        }
-
-        .stat-box {
-            background-color: #fff;
-            color: #000;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 5px;
-            border-radius: 2px;
-            font-weight: 900;
-        }
-
-        .stat-icon {
-            font-size: 1.2rem;
-            margin-bottom: 2px;
-        }
-
-        .stat-value {
-            font-size: 1.1rem;
-        }
-
-        .ovr-bar {
-            display: flex;
-            justify-content: space-between;
-            background-color: #4a235a;
-            padding: 5px 10px;
-            font-size: 1.1rem;
-            margin-bottom: 15px;
-            border-radius: 2px;
-        }
-
-        /* Tabela de Carreira */
-        .career-table {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            flex-grow: 1;
-            overflow-y: auto;
-            margin-bottom: 120px; /* Espaço para a área de ação */
-        }
-
-        .table-header {
-            display: flex;
-            justify-content: flex-end;
-            background-color: #1e8449;
-            padding: 4px 10px;
-            font-size: 0.75rem;
-            border-radius: 2px;
-            margin-bottom: 2px;
-        }
-
-        .table-header span {
-            width: 30px;
-            text-align: center;
-            margin-left: 10px;
-        }
-
-        .career-row {
-            display: flex;
-            background-color: #fff;
-            color: #000;
-            height: 40px;
-            border-radius: 2px;
-            overflow: hidden;
-        }
-
-        .row-age {
-            background-color: #8a2be2;
-            color: #fff;
-            width: 45px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            font-weight: 900;
-        }
-
-        .row-age.academy { background-color: #f1c40f; color: #000; }
-        .row-age.retired { background-color: #e67e22; }
-
-        .row-club {
-            flex-grow: 1;
-            padding: 0 10px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            border-right: 2px solid #ccc;
-        }
-
-        .club-name { font-size: 0.85rem; font-weight: 900; text-transform: uppercase; }
-        .club-country { font-size: 0.65rem; color: #555; }
-
-        .row-stats {
-            display: flex;
-            background-color: #a9dfbf; /* Verde claro */
-        }
-
-        .row-stats div {
-            width: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.95rem;
-            font-weight: 900;
-            border-left: 1px solid rgba(0,0,0,0.1);
-        }
-
-        /* Área de Ação (Bottom fixo) */
-        .action-area {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background-color: #1a1a1a;
-            border-top: 2px solid #333;
-            padding: 15px;
-            min-height: 120px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .btn {
-            background-color: #ff3b5c; /* Cor TikTok */
-            color: #fff;
-            border: none;
-            padding: 12px;
-            font-size: 1.1rem;
-            font-weight: 900;
-            border-radius: 5px;
-            cursor: pointer;
-            text-transform: uppercase;
-            width: 100%;
-            transition: transform 0.1s;
-        }
-
-        .btn:active { transform: scale(0.95); }
-
-        .btn-secondary {
-            background-color: #333;
-            margin-top: 5px;
-        }
-
-        /* Container de Propostas */
-        .proposal-box {
-            display: none;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .proposal-btn {
-            background-color: #fff;
-            color: #000;
-            border: 2px solid #8a2be2;
-            padding: 10px;
-            font-weight: 900;
-            border-radius: 5px;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        /* Roleta de Sorteio */
-        .slot-machine {
-            display: none;
-            text-align: center;
-            font-size: 1.5rem;
-            font-weight: 900;
-            color: #f1c40f;
-            padding: 20px 0;
-            animation: pulse 0.1s infinite alternate;
-        }
+        /* Hub de Transferências */
+        .transfer-hub { background: #080d0b; border: 1px solid var(--accent-color); border-radius: 6px; padding: 15px; margin-bottom: 20px; text-align: center; }
+        .transfer-title { color: var(--accent-color); text-transform: uppercase; font-size: 0.9rem; margin-bottom: 15px; letter-spacing: 1px; }
+        .proposals-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+        @media(min-width: 600px) { .proposals-grid { grid-template-columns: 1fr 1fr; } }
+        
+        .proposal-card { background: #121e18; border: 1px solid var(--border-color); padding: 15px; border-radius: 4px; display: flex; flex-direction: column; justify-content: space-between; }
+        .proposal-card.roulette-spin { animation: pulse 0.1s infinite; border-color: var(--primary-color); }
+        .proposal-club { font-size: 1.1rem; font-weight: bold; margin-bottom: 10px; min-height: 26px; }
+        
+        .btn-accept { background: var(--accent-color); color: #000; border: none; padding: 8px; border-radius: 4px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.8rem; }
+        .btn-reject { background: transparent; border: 1px solid var(--text-muted); color: var(--text-muted); padding: 8px; border-radius: 4px; cursor: pointer; margin-top: 5px; }
 
         @keyframes pulse {
-            from { transform: scale(1); }
-            to { transform: scale(1.05); }
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
         }
+
+        /* Animação inicial */
+        #roulette-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 100; justify-content: center; align-items: center; flex-direction: column; text-align: center; }
+        #roulette-text { font-size: 3rem; color: var(--primary-color); font-weight: bold; margin-top: 20px; text-transform: uppercase; }
+        
+        .final-stats { display: flex; justify-content: space-around; background: #080d0b; padding: 20px; border-radius: 6px; margin-top: 20px; }
+        .final-stat-box { text-align: center; }
+        .final-stat-box span { display: block; font-size: 2rem; color: var(--primary-color); font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div class="app-container">
-        <div class="top-stats">
-            <div class="stat-box"><span class="stat-icon">⚽</span><span class="stat-value" id="global-goals">0</span></div>
-            <div class="stat-box"><span class="stat-icon">👟</span><span class="stat-value" id="global-assists">0</span></div>
-            <div class="stat-box"><span class="stat-icon">🏆</span><span class="stat-value" id="global-titles">0</span></div>
-            <div class="stat-box" style="border: 2px solid #f1c40f;"><span class="stat-icon">⭐</span><span class="stat-value" id="global-ovr">70</span></div>
+    <div id="roulette-overlay">
+        <h3 style="color: var(--text-muted); text-transform: uppercase;">Sorteando Clube da Base...</h3>
+        <div id="roulette-text">Buscando...</div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>Career Simulator</h1>
         </div>
 
-        <div class="ovr-bar">
-            <span>OVR <span id="bar-ovr">70</span></span>
-            <span>PAC 85</span>
-            <span>SHO 72</span>
-            <span>PAS 68</span>
-            <span>DRI 75</span>
+        <div id="screen-setup" class="screen active">
+            <div class="form-group">
+                <label>Nome do Jogador</label>
+                <input type="text" id="player-name" value="Craque Desconhecido">
+            </div>
+            <div class="form-group">
+                <label>Posição Principal</label>
+                <select id="player-pos">
+                    <option value="ATA">Atacante (Foco em Gols)</option>
+                    <option value="MEI">Meio-Campo (Gols e Assists)</option>
+                    <option value="ZAG">Zagueiro (Foco em Defesa/Poucos Gols)</option>
+                </select>
+            </div>
+            <button class="btn" onclick="startDraft()">Começar Carreira</button>
         </div>
 
-        <div style="display: flex; justify-content: flex-end;">
-            <div class="table-header">
-                Stats por 2 Anos
-                <span style="margin-left: 20px;">🏆</span>
-                <span>⭐</span>
-                <span>⚽</span>
-            </div>
-        </div>
-
-        <div class="career-table" id="career-table">
-            </div>
-
-        <div class="action-area" id="action-area">
-            <button class="btn" id="btn-simulate" onclick="simulateSeason()">Simular (16-18 Anos)</button>
-            
-            <div class="slot-machine" id="slot-machine">
-                SORTEANDO... <br> <span id="slot-club-name" style="color: #fff; font-size: 1.2rem;">---</span>
-            </div>
-
-            <div class="proposal-box" id="proposal-box">
+        <div id="screen-game" class="screen">
+            <div class="player-info-bar">
+                <div>
+                    <h2 id="ui-name">Nome</h2>
+                    <span style="color: var(--text-muted); font-size: 0.85rem;" id="ui-pos">POS</span>
                 </div>
+                <div style="text-align: right;">
+                    <div style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;">Clube Atual</div>
+                    <div class="club-name" id="ui-club">Clube</div>
+                </div>
+            </div>
+
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>Idade</th>
+                        <th style="text-align: left;">Clube</th>
+                        <th>Gols</th>
+                        <th>Asts</th>
+                        <th>Títulos</th>
+                    </tr>
+                </thead>
+                <tbody id="history-body">
+                    </tbody>
+            </table>
+
+            <div class="transfer-hub" id="transfer-hub" style="display: none;">
+                <div class="transfer-title" id="transfer-status">Janela de Transferências Aberta</div>
+                <div class="proposals-grid" id="proposals-container">
+                    </div>
+                <button class="btn btn-reject" id="btn-stay" style="display: none; margin-top: 15px; width: 100%;" onclick="rejectProposals()">Recusar Ofertas e Ficar</button>
+            </div>
+
+            <button class="btn" id="btn-simulate" onclick="simulateSeason()">Simular 2 Anos</button>
+        </div>
+
+        <div id="screen-end" class="screen">
+            <h2 style="text-align: center; color: var(--accent-color); text-transform: uppercase; margin-bottom: 10px;">Fim de Carreira (36 Anos)</h2>
+            <p style="text-align: center; color: var(--text-muted);">Sua jornada chegou ao fim. Estes são seus números finais:</p>
+            
+            <div class="final-stats">
+                <div class="final-stat-box">
+                    <span id="end-goals">0</span>
+                    <label>Gols</label>
+                </div>
+                <div class="final-stat-box">
+                    <span id="end-assists">0</span>
+                    <label>Assists</label>
+                </div>
+                <div class="final-stat-box">
+                    <span id="end-trophies">0</span>
+                    <label>Títulos</label>
+                </div>
+            </div>
+
+            <button class="btn" onclick="location.reload()" style="margin-top: 30px;">Jogar Novamente</button>
         </div>
     </div>
 
     <script>
-        // Banco de dados de clubes com bandeiras e nível
         const CLUBS = [
-            { name: "Man City", country: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 England", tier: 5 },
-            { name: "Arsenal", country: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 England", tier: 5 },
-            { name: "Liverpool", country: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 England", tier: 5 },
-            { name: "Real Madrid", country: "🇪🇸 Spain", tier: 5 },
-            { name: "Barcelona", country: "🇪🇸 Spain", tier: 5 },
-            { name: "Bayern Munich", country: "🇩🇪 Germany", tier: 5 },
-            { name: "PSG", country: "🇫🇷 France", tier: 5 },
-            { name: "Inter Milan", country: "🇮🇹 Italy", tier: 5 },
-            { name: "AC Milan", country: "🇮🇹 Italy", tier: 4 },
-            { name: "Juventus", country: "🇮🇹 Italy", tier: 4 },
-            { name: "Borussia D.", country: "🇩🇪 Germany", tier: 4 },
-            { name: "Atlético", country: "🇪🇸 Spain", tier: 4 },
-            { name: "Chelsea", country: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 England", tier: 4 },
-            { name: "Man United", country: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 England", tier: 4 },
-            { name: "Tottenham", country: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 England", tier: 4 },
-            { name: "Aston Villa", country: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 England", tier: 3 },
-            { name: "Sevilla", country: "🇪🇸 Spain", tier: 3 },
-            { name: "Roma", country: "🇮🇹 Italy", tier: 3 },
-            { name: "Napoli", country: "🇮🇹 Italy", tier: 4 },
-            { name: "Leverkusen", country: "🇩🇪 Germany", tier: 4 }
+            "Real Madrid", "Barcelona", "Atlético Madrid", "Sevilla", 
+            "Man City", "Arsenal", "Liverpool", "Chelsea", "Man United", "Tottenham", "Aston Villa",
+            "Bayern Munique", "B. Dortmund", "B. Leverkusen", "RB Leipzig",
+            "Inter Milão", "Milan", "Juventus", "Napoli", "Roma",
+            "PSG", "Monaco", "Marseille", "Lyon",
+            "Ajax", "Benfica", "Porto", "Sporting"
         ];
 
+        const TROPHIES = ["🏆 Champions", "🥇 Liga", "🥈 Copa"];
+
         let player = {
-            age: 16,
-            ovr: 70,
-            totalGoals: 0,
-            totalAssists: 0,
-            totalTitles: 0,
-            currentClub: null
+            name: "", pos: "", age: 16, currentClub: "",
+            totalGoals: 0, totalAssists: 0, totalTrophies: 0
         };
 
-        // Inicia o jogo sorteando um time de base
-        function init() {
-            player.currentClub = CLUBS[Math.floor(Math.random() * CLUBS.length)];
-            addTableRow('A', player.currentClub, 0, 0, 0, 'academy'); // A = Academy (Base)
-            updateHeaders();
+        function getRandomClub(exclude = "") {
+            let club = exclude;
+            while(club === exclude) {
+                club = CLUBS[Math.floor(Math.random() * CLUBS.length)];
+            }
+            return club;
         }
 
-        function updateHeaders() {
-            document.getElementById('global-goals').innerText = player.totalGoals;
-            document.getElementById('global-assists').innerText = player.totalAssists;
-            document.getElementById('global-titles').innerText = player.totalTitles;
-            document.getElementById('global-ovr').innerText = player.ovr;
-            document.getElementById('bar-ovr').innerText = player.ovr;
-        }
-
-        function addTableRow(ageLabel, club, trophiesLg, trophiesCont, goals, ageClass = '') {
-            const table = document.getElementById('career-table');
-            const row = document.createElement('div');
-            row.className = 'career-row';
+        function startDraft() {
+            player.name = document.getElementById('player-name').value || "Craque";
+            player.pos = document.getElementById('player-pos').value;
             
-            row.innerHTML = `
-                <div class="row-age ${ageClass}">${ageLabel}</div>
-                <div class="row-club">
-                    <span class="club-name">${club.name}</span>
-                    <span class="club-country">${club.country}</span>
-                </div>
-                <div class="row-stats">
-                    <div>${trophiesLg}</div>
-                    <div>${trophiesCont}</div>
-                    <div>${goals}</div>
-                </div>
+            const overlay = document.getElementById('roulette-overlay');
+            const rouletteText = document.getElementById('roulette-text');
+            overlay.style.display = 'flex';
+
+            let ticks = 0;
+            const finalClub = getRandomClub();
+            
+            // Animação da Roleta Inicial
+            const interval = setInterval(() => {
+                rouletteText.innerText = getRandomClub();
+                ticks++;
+                if(ticks > 25) { // Para após ~2.5 segundos
+                    clearInterval(interval);
+                    rouletteText.innerText = finalClub;
+                    rouletteText.style.color = "#fff";
+                    
+                    setTimeout(() => {
+                        overlay.style.display = 'none';
+                        player.currentClub = finalClub;
+                        setupGameScreen();
+                    }, 1500);
+                }
+            }, 100);
+        }
+
+        function setupGameScreen() {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('screen-game').classList.add('active');
+            
+            document.getElementById('ui-name').innerText = player.name;
+            document.getElementById('ui-pos').innerText = player.pos;
+            document.getElementById('ui-club').innerText = player.currentClub;
+            
+            // Adiciona a primeira linha (Base)
+            addHistoryRow(16, player.currentClub, "-", "-", "Contrato Base");
+        }
+
+        function addHistoryRow(age, club, goals, assists, trophiesStr) {
+            const tbody = document.getElementById('history-body');
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="col-age">${age}</td>
+                <td class="col-club">${club}</td>
+                <td>${goals}</td>
+                <td>${assists}</td>
+                <td style="font-size: 0.8rem;">${trophiesStr || "-"}</td>
             `;
-            table.appendChild(row);
-            
-            // Rolar para o fim da tabela
-            table.scrollTop = table.scrollHeight;
+            // Insere no topo
+            tbody.insertBefore(tr, tbody.firstChild);
         }
 
         function simulateSeason() {
-            const btn = document.getElementById('btn-simulate');
-            btn.style.display = 'none'; // Esconde botão
+            if (player.age >= 36) return;
 
-            // Calcula estatísticas para 2 anos baseado no OVR e Tier do clube
-            let ageFactor = (player.age >= 24 && player.age <= 30) ? 1.3 : (player.age > 32 ? 0.6 : 1.0);
+            // Bloqueia botão durante simulação
+            document.getElementById('btn-simulate').disabled = true;
+            document.getElementById('btn-simulate').innerText = "Simulando...";
+            document.getElementById('transfer-hub').style.display = "none";
+
+            setTimeout(() => {
+                // Cálculo de Gols e Assists (2 anos)
+                let multiplier = (player.age >= 22 && player.age <= 30) ? 1.5 : 1.0;
+                let gBase = player.pos === 'ATA' ? 20 : player.pos === 'MEI' ? 8 : 2;
+                let aBase = player.pos === 'MEI' ? 15 : player.pos === 'ATA' ? 5 : 2;
+
+                let goals = Math.floor((gBase + Math.random() * 15) * multiplier * 2); // x2 pois são 2 anos
+                let assists = Math.floor((aBase + Math.random() * 10) * multiplier * 2);
+                
+                player.totalGoals += goals;
+                player.totalAssists += assists;
+                player.age += 2;
+
+                // Títulos Aleatórios no período
+                let wonTrophies = [];
+                for(let i=0; i<2; i++) {
+                    if(Math.random() < 0.25) wonTrophies.push("🥇 Liga");
+                    if(Math.random() < 0.15) wonTrophies.push("🏆 Champions");
+                }
+                player.totalTrophies += wonTrophies.length;
+
+                // Atualiza UI Histórico
+                addHistoryRow(player.age, player.currentClub, goals, assists, wonTrophies.join(", "));
+
+                // Verifica fim de carreira
+                if (player.age >= 36) {
+                    endGame();
+                } else {
+                    triggerTransferWindow();
+                }
+            }, 800);
+        }
+
+        function triggerTransferWindow() {
+            const hub = document.getElementById('transfer-hub');
+            const container = document.getElementById('proposals-container');
+            const btnStay = document.getElementById('btn-stay');
             
-            // Evolução do jogador (OVR sobe até os 28, depois cai)
-            if (player.age < 28) player.ovr += Math.floor(Math.random() * 4) + 1;
-            else if (player.age > 30) player.ovr -= Math.floor(Math.random() * 3);
+            hub.style.display = "block";
+            document.getElementById('transfer-status').innerText = "Procurando ofertas no mercado...";
+            container.innerHTML = "";
+            btnStay.style.display = "none";
 
-            let periodGoals = Math.floor((10 + Math.random() * 25) * ageFactor * (player.ovr/80));
-            let periodAssists = Math.floor((5 + Math.random() * 15) * ageFactor * (player.ovr/80));
-            
-            let tLeague = 0;
-            let tCont = 0;
+            // Define se terá 0, 1 ou 2 propostas
+            const numProposals = Math.random() < 0.2 ? 0 : Math.random() < 0.6 ? 1 : 2;
 
-            // Simula Títulos
-            for(let i=0; i<2; i++) {
-                if(Math.random() * 100 < (player.currentClub.tier * 8)) tLeague++;
-                if(player.currentClub.tier >= 4 && Math.random() * 100 < (player.currentClub.tier * 4)) tCont++;
-            }
-
-            // Atualiza totais globais
-            player.totalGoals += periodGoals;
-            player.totalAssists += periodAssists;
-            player.totalTitles += (tLeague + tCont);
-
-            // Adiciona a linha de resultado na tabela
-            addTableRow(player.age, player.currentClub, tLeague, tCont, periodGoals);
-            
-            updateHeaders();
-            
-            // Avança idade
-            player.age += 2;
-
-            if (player.age > 36) {
-                // Aposentadoria
-                addTableRow('R', {name: "APOSENTADORIA", country: "Fim de Carreira"}, '-', '-', '-', 'retired');
-                document.getElementById('action-area').innerHTML = `<h3 style="text-align:center; color:#e67e22;">CARREIRA ENCERRADA</h3><button class="btn btn-secondary" onclick="location.reload()">Jogar Novamente</button>`;
+            if (numProposals === 0) {
+                setTimeout(() => {
+                    document.getElementById('transfer-status').innerText = "Nenhuma proposta recebida nesta janela.";
+                    document.getElementById('btn-simulate').disabled = false;
+                    document.getElementById('btn-simulate').innerText = "Simular Próximos 2 Anos";
+                }, 1500);
                 return;
             }
 
-            // Iniciar Roleta de Transferências
-            startTransferRoulette();
-        }
+            document.getElementById('transfer-status').innerText = "Sorteando Propostas...";
 
-        function startTransferRoulette() {
-            const slotMachine = document.getElementById('slot-machine');
-            const clubNameSpan = document.getElementById('slot-club-name');
-            const proposalBox = document.getElementById('proposal-box');
-            
-            slotMachine.style.display = 'block';
-            proposalBox.style.display = 'none';
-
-            let ticks = 0;
-            
-            // Animação trocando os nomes rapidamente a cada 80ms
-            const interval = setInterval(() => {
-                const randomClub = CLUBS[Math.floor(Math.random() * CLUBS.length)];
-                clubNameSpan.innerText = randomClub.name;
-                ticks++;
-
-                if (ticks > 25) { // Para após ~2 segundos
-                    clearInterval(interval);
-                    slotMachine.style.display = 'none';
-                    showTransferProposals();
-                }
-            }, 80);
-        }
-
-        function showTransferProposals() {
-            const proposalBox = document.getElementById('proposal-box');
-            proposalBox.innerHTML = ''; // Limpa anterior
-            
-            // Quantidade de propostas: 1 a 2
-            const numProposals = Math.random() > 0.5 ? 2 : 1;
-            let proposals = [];
-
-            while(proposals.length < numProposals) {
-                let candidate = CLUBS[Math.floor(Math.random() * CLUBS.length)];
-                if (candidate.name !== player.currentClub.name && !proposals.includes(candidate)) {
-                    proposals.push(candidate);
-                }
+            // Cria os cards para a roleta
+            let proposalClubs = [];
+            for (let i = 0; i < numProposals; i++) {
+                let card = document.createElement('div');
+                card.className = "proposal-card roulette-spin";
+                card.id = `prop-card-${i}`;
+                card.innerHTML = `<div class="proposal-club" id="prop-text-${i}">...</div>`;
+                container.appendChild(card);
+                
+                // Escolhe clube final daquela carta
+                let pClub = getRandomClub(player.currentClub);
+                while(proposalClubs.includes(pClub)) pClub = getRandomClub(player.currentClub);
+                proposalClubs.push(pClub);
             }
 
-            // Renderiza os botões de propostas
-            proposals.forEach(club => {
-                const btn = document.createElement('button');
-                btn.className = 'proposal-btn';
-                btn.innerHTML = `<span>✈️ ${club.name}</span> <span style="color:#555">${club.country}</span>`;
-                btn.onclick = () => acceptProposal(club);
-                proposalBox.appendChild(btn);
-            });
-
-            // Opção de ficar no clube atual
-            const stayBtn = document.createElement('button');
-            stayBtn.className = 'proposal-btn';
-            stayBtn.style.borderColor = '#1e8449';
-            stayBtn.innerHTML = `<span>🤝 Ficar no ${player.currentClub.name}</span>`;
-            stayBtn.onclick = () => acceptProposal(player.currentClub);
-            proposalBox.appendChild(stayBtn);
-
-            proposalBox.style.display = 'flex';
+            // Animação da Roleta nas cartas
+            let ticks = 0;
+            const interval = setInterval(() => {
+                for (let i = 0; i < numProposals; i++) {
+                    document.getElementById(`prop-text-${i}`).innerText = getRandomClub();
+                }
+                ticks++;
+                if (ticks > 20) {
+                    clearInterval(interval);
+                    document.getElementById('transfer-status').innerText = "Você tem ofertas na mesa!";
+                    
+                    // Finaliza animação e mostra botões de aceitar
+                    for (let i = 0; i < numProposals; i++) {
+                        const finalC = proposalClubs[i];
+                        const cardEl = document.getElementById(`prop-card-${i}`);
+                        cardEl.classList.remove('roulette-spin');
+                        cardEl.innerHTML = `
+                            <div class="proposal-club">${finalC}</div>
+                            <button class="btn-accept" onclick="acceptProposal('${finalC}')">Assinar</button>
+                        `;
+                    }
+                    btnStay.style.display = "block";
+                }
+            }, 100);
         }
 
-        function acceptProposal(selectedClub) {
-            player.currentClub = selectedClub;
+        function acceptProposal(newClub) {
+            player.currentClub = newClub;
+            document.getElementById('ui-club').innerText = newClub;
+            closeTransferWindow();
+        }
+
+        function rejectProposals() {
+            closeTransferWindow();
+        }
+
+        function closeTransferWindow() {
+            document.getElementById('transfer-hub').style.display = "none";
+            document.getElementById('btn-simulate').disabled = false;
+            document.getElementById('btn-simulate').innerText = "Simular Próximos 2 Anos";
+        }
+
+        function endGame() {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('screen-end').classList.add('active');
             
-            // Reseta a interface de baixo
-            document.getElementById('proposal-box').style.display = 'none';
-            const btnSimulate = document.getElementById('btn-simulate');
-            btnSimulate.innerText = `Simular (${player.age}-${player.age+2} Anos)`;
-            btnSimulate.style.display = 'block';
+            document.getElementById('end-goals').innerText = player.totalGoals;
+            document.getElementById('end-assists').innerText = player.totalAssists;
+            document.getElementById('end-trophies').innerText = player.totalTrophies;
         }
-
-        // Inicia o jogo ao carregar a página
-        window.onload = init;
     </script>
 </body>
 </html>
